@@ -2,10 +2,10 @@ pacman = {
     x: 6,
     y: 5
 }
-staticGhost1 = {
-    x: 11,
-    y: 5
-}
+// staticGhost1 = {
+//     x: 11,
+//     y: 5
+// }
 // staticGhost2 = {
 //     x: 1,
 //     y: 5
@@ -17,6 +17,11 @@ randomGhost1 = {
 
 astarGhost = {
     x: 1,
+    y: 5
+}
+
+dijGhost = {
+    x: 11,
     y: 5
 }
 
@@ -56,7 +61,6 @@ for(var i = 0; i < map.length; i++)
 
 var el = document.getElementById('world');
 function drawWorld() {
-    console.log("draw world called");
     el.innerHTML = '';
     var pacmanWins = true;
     for (var y = 0; y < map.length; y = y + 1) {
@@ -166,83 +170,61 @@ ghostCredit = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]
 
-var directionUp1 = true;
-var staticGhost1Moves = window.setInterval(function(){
-    if (directionUp1){
-        if (map[staticGhost1.y - 1][staticGhost1.x] == 5){
-            drawWorld();
-            console.log("Hit!");
-            alert("Game Over!");
-            location.reload();
-        }
-        else if (map[staticGhost1.y - 1][staticGhost1.x] == 2){
-            ghostCredit[staticGhost1.y - 1][staticGhost1.x] = 1;
-            map[staticGhost1.y - 1][staticGhost1.x] = 4;
-            map[staticGhost1.y][staticGhost1.x] = 3;
-            if (ghostCredit[staticGhost1.y][staticGhost1.x] === 1){
-                map[staticGhost1.y][staticGhost1.x] = 2;
-                ghostCredit[staticGhost1.y][staticGhost1.x] = 0;
-            }
-            staticGhost1.y = staticGhost1.y - 1;
-        }
-        else if (map[staticGhost1.y - 1][staticGhost1.x] == 3){
-            map[staticGhost1.y - 1][staticGhost1.x] = 4;
-            map[staticGhost1.y][staticGhost1.x] = 3;
-            if (ghostCredit[staticGhost1.y][staticGhost1.x] === 1){
-                map[staticGhost1.y][staticGhost1.x] = 2;
-                ghostCredit[staticGhost1.y][staticGhost1.x] = 0;
-            }
-            staticGhost1.y = staticGhost1.y - 1;
-        }
-        else if (map[staticGhost1.y - 1][staticGhost1.x] == 1 ||
-            map[staticGhost1.y - 1][staticGhost1.x] == 6 ||
-            map[staticGhost1.y - 1][staticGhost1.x] == 7){
-            directionUp1 = false;
-        }
-    }
-    else{
-        if (map[staticGhost1.y + 1][staticGhost1.x] == 5){
-            drawWorld();
-            console.log("Hit!");
-            alert("Game Over!");
-            location.reload();
-        }
-        else if (map[staticGhost1.y + 1][staticGhost1.x] == 2){
-            ghostCredit[staticGhost1.y + 1][staticGhost1.x] = 1;
-            map[staticGhost1.y + 1][staticGhost1.x] = 4;
-            map[staticGhost1.y][staticGhost1.x] = 3;
-            if (ghostCredit[staticGhost1.y][staticGhost1.x] === 1){
-                map[staticGhost1.y][staticGhost1.x] = 2;
-                ghostCredit[staticGhost1.y][staticGhost1.x] = 0;
-            }
-            staticGhost1.y = staticGhost1.y + 1;
-        }
-        else if (map[staticGhost1.y + 1][staticGhost1.x] == 3){
-            map[staticGhost1.y + 1][staticGhost1.x] = 4;
-            map[staticGhost1.y][staticGhost1.x] = 3;
-            if (ghostCredit[staticGhost1.y][staticGhost1.x] === 1){
-                map[staticGhost1.y][staticGhost1.x] = 2;
-                ghostCredit[staticGhost1.y][staticGhost1.x] = 0;
-            }
-            staticGhost1.y = staticGhost1.y + 1;
-        }
-        else if (map[staticGhost1.y + 1][staticGhost1.x] == 1 ||
-            map[staticGhost1.y + 1][staticGhost1.x] == 6 ||
-            map[staticGhost1.y + 1][staticGhost1.x] == 7){
-            directionUp1 = true;
-        }
-    }
-    drawWorld();
-}, 500);
-
-var directionUp2 = false;
-let prevPath;
+let prevPathDij;
 let prevPacmanLoc;
+let prevPathLastIdxUsedDij;
+
+var dijkstraGhostMoves = window.setInterval(function () {
+    if (prevPathDij && prevPacmanLoc && (prevPacmanLoc.row) == pacman.y && (prevPacmanLoc.col) == pacman.x) {
+        nextDij = prevPathDij[prevPathLastIdxUsedDij + 1];
+        prevPathLastIdxUsedDij++;
+    } else {
+        grid = prepareMapForSearch(map);
+        src = {row: dijGhost.y, col: dijGhost.x}
+        dest = {row: pacman.y, col: pacman.x}
+        console.log("src DIJ", src)
+        console.log("dest DIJ", dest)
+        pathDij = search(grid, src, dest, true)
+        console.log("PATH DJ", pathDij)
+        nextDij = pathDij[1];
+        prevPathLastIdxUsedDij = 1;
+        prevPathDij = path; 
+        prevPacmanLoc = {row: pacman.y, col: pacman.x}
+    }
+    
+    console.log(map[nextDij.row][nextDij.col]);
+    switch (map[nextDij.row][nextDij.col]) {
+        case 5:
+            drawWorld();
+            console.log("Hit!");
+            alert("Game Over!");
+            location.reload();
+        case 2:
+        case 3:
+            console.log("DIJ GHOST", dijGhost)
+            ghostCredit[nextDij.row][nextDij.col] = 1;
+            map[nextDij.row][nextDij.col] = 4;
+            map[dijGhost.y][dijGhost.x] = 3;
+            if (ghostCredit[dijGhost.y][dijGhost.x] === 1){
+                map[dijGhost.y][dijGhost.x] = 2;
+                ghostCredit[dijGhost.y ][dijGhost.x] = 0;
+            }
+            dijGhost.y =  nextDij.row;
+            dijGhost.x =  nextDij.col;
+        default:
+            break;
+    }
+
+    drawWorld();
+
+}, 500)
+
+let prevPath;
 let prevPathLastIdxUsed;
 
 var astarGhostMoves = window.setInterval(function () {
-    if (prevPath && prevPacmanLoc && (ROW - prevPacmanLoc.row - 1) == pacman.y && (prevPacmanLoc.col) == pacman.x) {
-        next = path[prevPathLastIdxUsed + 1];
+    if (prevPath && prevPacmanLoc && (prevPacmanLoc.row) == pacman.y && (prevPacmanLoc.col) == pacman.x) {
+        next = prevPath[prevPathLastIdxUsed + 1];
         prevPathLastIdxUsed++;
     } else {
         grid = prepareMapForSearch(map);

@@ -48,18 +48,18 @@ function tracePath(cellDetails, dest) {
 }
 
 function search(grid, src, dest, isDijkstra) {
-    if (!isValid(src.col, src.row)) {
+    if (!isValid(src.row, src.col)) {
         console.log("source is out of bounds");
         return;
     }
 
-    if (!isValid(dest.col, dest.row)) {
+    if (!isValid(dest.row, dest.col)) {
         console.log("destination is out of bounds");
         return;
     }
 
     if (!isUnblocked(grid, src.row, src.col) ||
-     !isUnblocked(grid, dest.col, dest.row)) {
+     !isUnblocked(grid, dest.row, dest.col)) {
         console.log("src or destination are blocked");
         return;
     }
