@@ -6,13 +6,18 @@ staticGhost1 = {
     x: 11,
     y: 5
 }
-staticGhost2 = {
-    x: 1,
-    y: 5
-}
+// staticGhost2 = {
+//     x: 1,
+//     y: 5
+// }
 randomGhost1 = {
     x: 6,
     y: 9
+}
+
+astarGhost = {
+    x: 1,
+    y: 5
 }
 
 map = [
@@ -21,7 +26,7 @@ map = [
     [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
     [1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1],
     [1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1],
-    [1, 4, 2, 2, 1, 1, 5, 1, 1, 2, 2, 4, 1],
+    [1, 7, 2, 2, 1, 1, 5, 1, 1, 2, 2, 4, 1],
     [1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1],
     [1, 2, 1, 1, 2, 2, 1, 2, 2, 1, 1, 2, 1],
     [1, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 1],
@@ -29,12 +34,29 @@ map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
+function prepareMapForSearch() {
+    copy = map.slice();
+    for (let i = 0; i < map.length; i++) {
+        copy[i] = map[i].slice();
+        for (let j = 0; j < map[0].length; j++) {
+            if (map[i][j] != 1) {
+                copy[i][j] = 1;
+            } else {
+                copy[i][j] = 0;
+            }
+        }
+    }
+
+    return copy;
+}
+
 prevMap = [];
 for(var i = 0; i < map.length; i++)
     prevMap[i] = map[i].slice();
 
 var el = document.getElementById('world');
 function drawWorld() {
+    console.log("draw world called");
     el.innerHTML = '';
     var pacmanWins = true;
     for (var y = 0; y < map.length; y = y + 1) {
@@ -148,6 +170,7 @@ var directionUp1 = true;
 var staticGhost1Moves = window.setInterval(function(){
     if (directionUp1){
         if (map[staticGhost1.y - 1][staticGhost1.x] == 5){
+            drawWorld();
             console.log("Hit!");
             alert("Game Over!");
             location.reload();
@@ -179,6 +202,7 @@ var staticGhost1Moves = window.setInterval(function(){
     }
     else{
         if (map[staticGhost1.y + 1][staticGhost1.x] == 5){
+            drawWorld();
             console.log("Hit!");
             alert("Game Over!");
             location.reload();
@@ -212,71 +236,121 @@ var staticGhost1Moves = window.setInterval(function(){
 }, 500);
 
 var directionUp2 = false;
-var staticGhost2Moves = window.setInterval(function(){
-    if (directionUp2){
-        if (map[staticGhost2.y - 1][staticGhost2.x] == 5){
+let prevPath;
+let prevPacmanLoc;
+let prevPathLastIdxUsed;
+
+var astarGhostMoves = window.setInterval(function () {
+    if (prevPath && prevPacmanLoc && (ROW - prevPacmanLoc.row - 1) == pacman.y && (prevPacmanLoc.col) == pacman.x) {
+        next = path[prevPathLastIdxUsed + 1];
+        prevPathLastIdxUsed++;
+    } else {
+        grid = prepareMapForSearch(map);
+        src = {row: astarGhost.y, col: astarGhost.x}
+        dest = {row: pacman.y, col: pacman.x}
+        console.log("src", src)
+        console.log("dest", dest)
+        path = search(grid, src, dest, false)
+        next = path[1];
+        console.log(next);
+        prevPathLastIdxUsed = 1;
+        prevPath = path; 
+        prevPacmanLoc = {row: pacman.y, col: pacman.x}
+    }
+    
+    console.log(map[next.row][next.col]);
+    switch (map[next.row][next.col]) {
+        case 5:
+            drawWorld();
             console.log("Hit!");
             alert("Game Over!");
             location.reload();
-        }
-        else if (map[staticGhost2.y - 1][staticGhost2.x] == 2){
-            ghostCredit[staticGhost2.y - 1][staticGhost2.x] = 1;
-            map[staticGhost2.y - 1][staticGhost2.x] = 4;
-            map[staticGhost2.y][staticGhost2.x] = 3;
-            if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
-                map[staticGhost2.y][staticGhost2.x] = 2;
-                ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
+        case 2:
+        case 3:
+            console.log("ASTAR GHOST", astarGhost)
+            ghostCredit[next.row][next.col] = 1;
+            map[next.row][next.col] = 7;
+            map[astarGhost.y][astarGhost.x] = 3;
+            if (ghostCredit[astarGhost.y][astarGhost.x] === 1){
+                map[astarGhost.y][astarGhost.x] = 2;
+                ghostCredit[astarGhost.y ][astarGhost.x] = 0;
             }
-            staticGhost2.y = staticGhost2.y - 1;
-        }
-        else if (map[staticGhost2.y - 1][staticGhost2.x] == 3){
-            map[staticGhost2.y - 1][staticGhost2.x] = 4;
-            map[staticGhost2.y][staticGhost2.x] = 3;
-            if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
-                map[staticGhost2.y][staticGhost2.x] = 2;
-                ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
-            }
-            staticGhost2.y = staticGhost2.y - 1;
-        }
-        else if (map[staticGhost2.y - 1][staticGhost2.x] == 1 ||
-            map[staticGhost2.y - 1][staticGhost2.x] == 6 ||
-            map[staticGhost2.y - 1][staticGhost2.x] == 7){
-            directionUp2 = false;
-        }
+            astarGhost.y =  next.row;
+            astarGhost.x =  next.col;
+        default:
+            break;
     }
-    else{
-        if (map[staticGhost2.y + 1][staticGhost2.x] == 5){
-            console.log("Hit!");
-            alert("Game Over!");
-            location.reload();
-        }
-        else if (map[staticGhost2.y + 1][staticGhost2.x] == 2){
-            ghostCredit[staticGhost2.y + 1][staticGhost2.x] = 1;
-            map[staticGhost2.y + 1][staticGhost2.x] = 4;
-            map[staticGhost2.y][staticGhost2.x] = 3;
-            if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
-                map[staticGhost2.y][staticGhost2.x] = 2;
-                ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
-            }
-            staticGhost2.y = staticGhost2.y + 1;
-        }
-        else if (map[staticGhost2.y + 1][staticGhost2.x] == 3){
-            map[staticGhost2.y + 1][staticGhost2.x] = 4;
-            map[staticGhost2.y][staticGhost2.x] = 3;
-            if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
-                map[staticGhost2.y][staticGhost2.x] = 2;
-                ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
-            }
-            staticGhost2.y = staticGhost2.y + 1;
-        }
-        else if (map[staticGhost2.y + 1][staticGhost2.x] == 1 ||
-            map[staticGhost2.y + 1][staticGhost2.x] == 6 ||
-            map[staticGhost2.y + 1][staticGhost2.x] == 7){
-            directionUp2 = true;
-        }
-    }
+
     drawWorld();
-}, 500);
+
+}, 500)
+
+
+// var staticGhost2Moves = window.setInterval(function(){
+//     if (directionUp2){
+//         if (map[staticGhost2.y - 1][staticGhost2.x] == 5){
+//             console.log("Hit!");
+//             alert("Game Over!");
+//             location.reload();
+//         }
+//         else if (map[staticGhost2.y - 1][staticGhost2.x] == 2){
+//             ghostCredit[staticGhost2.y - 1][staticGhost2.x] = 1;
+//             map[staticGhost2.y - 1][staticGhost2.x] = 4;
+//             map[staticGhost2.y][staticGhost2.x] = 3;
+//             if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
+//                 map[staticGhost2.y][staticGhost2.x] = 2;
+//                 ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
+//             }
+//             staticGhost2.y = staticGhost2.y - 1;
+//         }
+//         else if (map[staticGhost2.y - 1][staticGhost2.x] == 3){
+//             map[staticGhost2.y - 1][staticGhost2.x] = 4;
+//             map[staticGhost2.y][staticGhost2.x] = 3;
+//             if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
+//                 map[staticGhost2.y][staticGhost2.x] = 2;
+//                 ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
+//             }
+//             staticGhost2.y = staticGhost2.y - 1;
+//         }
+//         else if (map[staticGhost2.y - 1][staticGhost2.x] == 1 ||
+//             map[staticGhost2.y - 1][staticGhost2.x] == 6 ||
+//             map[staticGhost2.y - 1][staticGhost2.x] == 7){
+//             directionUp2 = false;
+//         }
+//     }
+//     else{
+//         if (map[staticGhost2.y + 1][staticGhost2.x] == 5){
+//             console.log("Hit!");
+//             alert("Game Over!");
+//             location.reload();
+//         }
+//         else if (map[staticGhost2.y + 1][staticGhost2.x] == 2){
+//             ghostCredit[staticGhost2.y + 1][staticGhost2.x] = 1;
+//             map[staticGhost2.y + 1][staticGhost2.x] = 4;
+//             map[staticGhost2.y][staticGhost2.x] = 3;
+//             if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
+//                 map[staticGhost2.y][staticGhost2.x] = 2;
+//                 ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
+//             }
+//             staticGhost2.y = staticGhost2.y + 1;
+//         }
+//         else if (map[staticGhost2.y + 1][staticGhost2.x] == 3){
+//             map[staticGhost2.y + 1][staticGhost2.x] = 4;
+//             map[staticGhost2.y][staticGhost2.x] = 3;
+//             if (ghostCredit[staticGhost2.y][staticGhost2.x] === 1){
+//                 map[staticGhost2.y][staticGhost2.x] = 2;
+//                 ghostCredit[staticGhost2.y][staticGhost2.x] = 0;
+//             }
+//             staticGhost2.y = staticGhost2.y + 1;
+//         }
+//         else if (map[staticGhost2.y + 1][staticGhost2.x] == 1 ||
+//             map[staticGhost2.y + 1][staticGhost2.x] == 6 ||
+//             map[staticGhost2.y + 1][staticGhost2.x] == 7){
+//             directionUp2 = true;
+//         }
+//     }
+//     drawWorld();
+// }, 500);
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
