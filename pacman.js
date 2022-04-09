@@ -199,8 +199,8 @@ var dijkstraGhostMoves = window.setInterval(function () {
             console.log("Hit!");
             alert("Game Over!");
             location.reload();
+            break;
         case 2:
-        case 3:
             console.log("DIJ GHOST", dijGhost)
             ghostCredit[nextDij.row][nextDij.col] = 1;
             map[nextDij.row][nextDij.col] = 4;
@@ -211,6 +211,18 @@ var dijkstraGhostMoves = window.setInterval(function () {
             }
             dijGhost.y =  nextDij.row;
             dijGhost.x =  nextDij.col;
+            break;
+        case 3:
+            console.log("DIJ GHOST", dijGhost)
+            map[nextDij.row][nextDij.col] = 4;
+            map[dijGhost.y][dijGhost.x] = 3;
+            if (ghostCredit[dijGhost.y][dijGhost.x] === 1){
+                map[dijGhost.y][dijGhost.x] = 2;
+                ghostCredit[dijGhost.y ][dijGhost.x] = 0;
+            }
+            dijGhost.y =  nextDij.row;
+            dijGhost.x =  nextDij.col;
+            break;
         default:
             break;
     }
@@ -247,8 +259,8 @@ var astarGhostMoves = window.setInterval(function () {
             console.log("Hit!");
             alert("Game Over!");
             location.reload();
+            break;
         case 2:
-        case 3:
             console.log("ASTAR GHOST", astarGhost)
             ghostCredit[next.row][next.col] = 1;
             map[next.row][next.col] = 7;
@@ -259,6 +271,18 @@ var astarGhostMoves = window.setInterval(function () {
             }
             astarGhost.y =  next.row;
             astarGhost.x =  next.col;
+            break;
+        case 3:
+            console.log("ASTAR GHOST", astarGhost)
+            map[next.row][next.col] = 7;
+            map[astarGhost.y][astarGhost.x] = 3;
+            if (ghostCredit[astarGhost.y][astarGhost.x] === 1){
+                map[astarGhost.y][astarGhost.x] = 2;
+                ghostCredit[astarGhost.y ][astarGhost.x] = 0;
+            }
+            astarGhost.y =  next.row;
+            astarGhost.x =  next.col;
+            break;
         default:
             break;
     }
